@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -10,6 +11,8 @@ import {
   ChartBarIcon,
   Cog6ToothIcon,
   BellAlertIcon,
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -23,39 +26,71 @@ const navigation = [
 ];
 
 export default function Sidebar() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="flex flex-col h-full bg-dark-surface text-white w-64">
-      <div className="p-4 bg-primary">
-        <div className="flex items-center gap-2 mb-2">
-          <Image 
-            src="/logoS.png" 
-            alt="SecurGuinée" 
-            width={32} 
-            height={32}
-            className="w-8 h-8"
-          />
-          <h1 className="text-xl font-bold text-white">SecurGuinée</h1>
+    <>
+      {/* Bouton toggle pour mobile */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary text-white"
+      >
+        {isOpen ? (
+          <XMarkIcon className="h-6 w-6" />
+        ) : (
+          <Bars3Icon className="h-6 w-6" />
+        )}
+      </button>
+
+      {/* Overlay sombre pour mobile */}
+      {isOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-40
+        flex flex-col h-full bg-dark-surface text-white w-64
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-4 bg-primary">
+          <div className="flex items-center gap-2 mb-2">
+            <Image 
+              src="/logoS.png" 
+              alt="SecurGuinée" 
+              width={32} 
+              height={32}
+              className="w-8 h-8"
+            />
+            <h1 className="text-xl font-bold text-white">SecurGuinée</h1>
+          </div>
+          <p className="text-sm text-white/70">Portail des Services d'Urgence</p>
         </div>
-        <p className="text-sm text-white/70">Portail des Services d'Urgence</p>
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <ul className="space-y-2">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-3 px-4 py-2 rounded-md text-white hover:bg-white/10 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Icon className="h-5 w-5 text-white" />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </div>
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className="flex items-center gap-3 px-4 py-2 rounded-md text-white hover:bg-white/10 transition-colors"
-                >
-                  <Icon className="h-5 w-5 text-white" />
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </div>
+    </>
   );
 } 
