@@ -1,0 +1,24 @@
+{
+  "name": "SecurGuinée",
+  "short_name": "SecurGuinée",
+  "description": "Portail des Services d'Urgence en Guinée",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#094FC6",
+  "theme_color": "#094FC6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logoS.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logoS.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+} 
