@@ -65,4 +65,9 @@
 //       </div>
 //     </div>
 //   );
-// } 
+// } ]
+
+export default function MapPage() {
+return (
+    <div className="max-w-7xl mx-auto space-y-6"></div>
+); }
