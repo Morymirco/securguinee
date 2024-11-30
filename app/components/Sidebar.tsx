@@ -1,19 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import {
-  HomeIcon,
-  ExclamationTriangleIcon,
-  MapIcon,
-  UserGroupIcon,
+  Bars3Icon,
+  BellAlertIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  BellAlertIcon,
-  Bars3Icon,
+  ExclamationTriangleIcon,
+  HomeIcon,
+  MapIcon,
+  UserGroupIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
 
 const navigation = [
   { name: 'Accueil', href: '/dashboard/home', icon: HomeIcon },
