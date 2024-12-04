@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Accueil', href: '/dashboard/home', icon: HomeIcon },
+  { name: 'Accueil', href: '/dashboard/', icon: HomeIcon },
   { name: 'Alertes en cours', href: '/dashboard/alerts', icon: BellAlertIcon },
   { name: 'Incidents', href: '/dashboard/incidents', icon: ExclamationTriangleIcon },
   { name: 'Carte des signalements', href: '/dashboard/map', icon: MapIcon },

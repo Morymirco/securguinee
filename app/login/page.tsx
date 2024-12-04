@@ -1,9 +1,11 @@
 'use client';
-import axios from 'axios';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { auth, db } from '../firebase/config';
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({
@@ -14,50 +16,76 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Vérification des données utilisateur au chargement
-  useEffect(() => {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      router.push('/dashboard');
-    }
-  }, [router]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const response = await axios.post(
-        'http://192.168.1.133:8000/autorite/login',
-        {
+      console.log('Tentative de connexion avec:', credentials.email);
+
+      // Vérifier d'abord si le service existe
+      const servicesRef = collection(db, 'emergency_services');
+      const q = query(servicesRef, where('email', '==', credentials.email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.log('Aucun service trouvé avec cet email');
+        setError('Email ou mot de passe incorrect');
+        setLoading(false);
+        return;
+      }
+
+      const serviceDoc = querySnapshot.docs[0];
+      const serviceData = serviceDoc.data();
+
+      // Vérifier si le service est actif
+      if (serviceData.status === 'inactive') {
+        console.log('Service inactif');
+        setError('Ce compte de service est actuellement inactif');
+        setLoading(false);
+        return;
+      }
+
+      // Tentative de connexion Firebase
+      try {
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          credentials.email,
+          credentials.password
+        );
+        console.log('Connexion Firebase réussie:', userCredential.user.uid);
+
+        // Stocker les informations du service
+        const userData = {
+          id: serviceDoc.id,
           email: credentials.email,
-          password: credentials.password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
+          ...serviceData
+        };
 
-      console.log('Réponse:', response.data);
-
-      if (response.data) {
-        // Stockage des données utilisateur
-        localStorage.setItem('userData', JSON.stringify(response.data));
+        console.log('Données du service à stocker:', userData);
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Redirection
+        console.log('Redirection vers le tableau de bord');
         router.push('/dashboard');
-      } else {
-        setError('Erreur lors de la connexion');
+      } catch (authError: any) {
+        console.error('Erreur d\'authentification Firebase:', authError);
+        
+        // Messages d'erreur spécifiques
+        const errorMessages: { [key: string]: string } = {
+          'auth/invalid-email': 'Format d\'email invalide',
+          'auth/user-disabled': 'Ce compte a été désactivé',
+          'auth/user-not-found': 'Email ou mot de passe incorrect',
+          'auth/wrong-password': 'Email ou mot de passe incorrect',
+          'auth/too-many-requests': 'Trop de tentatives. Veuillez réessayer plus tard'
+        };
+
+        setError(errorMessages[authError.code] || 'Erreur lors de la connexion');
       }
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.log('Erreur détaillée:', err.response?.data || err.message);
-        setError(err.response?.data?.detail || err.response?.data?.message || 'Erreur de connexion au serveur');
-      } else {
-        console.log('Erreur inattendue:', err);
-        setError('Une erreur inattendue est survenue');
-      }
+    } catch (error) {
+      console.error('Erreur générale:', error);
+      setError('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -75,10 +103,10 @@ export default function LoginPage() {
             className="mb-4"
           />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Connexion SecurGuinée
+            Connexion Service d'Urgence
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2 text-center">
-            Portail des Services d'Urgence
+            Accès réservé aux services d'urgence
           </p>
         </div>
 
@@ -91,7 +119,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Email
+              Email du service
             </label>
             <input
               type="email"
@@ -99,7 +127,7 @@ export default function LoginPage() {
               value={credentials.email}
               onChange={(e) => setCredentials({...credentials, email: e.target.value})}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-dark-surface dark:text-white"
-              placeholder="nom@service.gov.gn"
+              placeholder="service@securgn.gov.gn"
               required
             />
           </div>
@@ -137,9 +165,9 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
-          Besoin d'aide ? {' '}
-          <Link href="/documentation" className="text-primary hover:text-primary-dark">
-            Consultez la documentation
+          Problème de connexion ? {' '}
+          <Link href="/contact" className="text-primary hover:text-primary-dark">
+            Contactez l'administrateur
           </Link>
         </div>
       </div>

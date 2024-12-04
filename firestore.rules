@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /chat_urgence/{document=**} {
+      allow read: if true; // Temporairement pour le test
+    }
+    match /emergency_services/{document=**} {
+      allow read: if true; // Temporairement pour le test
+    }
+  }
+} 
